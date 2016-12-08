@@ -1,4 +1,4 @@
-﻿package AnimationExporter
+﻿package AnimateArtExporter
 {	
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
@@ -45,8 +45,6 @@
 				
 				return v;
 			}, 2);
-			
-			trace(animationsJSON);
 			
 			ExportJSON(getQualifiedClassName(sourceMC), animationsJSON);
 		}
