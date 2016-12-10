@@ -31,7 +31,8 @@
 		
 		public function exportAssetSheet(mc:MovieClip)
 		{
-			assetSheet.exportAssetSheet(mc, 1);
+			//assetSheet.exportAssetSheet(mc, 1);
+			assetSheet.exportMaxRect(mc);
 		}
 	}
 }

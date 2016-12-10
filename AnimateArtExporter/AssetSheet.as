@@ -2,103 +2,78 @@
 {	
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
-	import flash.events.Event;
-	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
-	import flash.filters.ColorMatrixFilter;
 	import flash.geom.Matrix;
-	import flash.net.FileReference;
 	import flash.utils.ByteArray;
-	import flash.utils.ByteArray;
-	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;	
-
-	import by.blooddy.crypto.image.PNGEncoder;
 	import flash.display.BitmapData;
 	import flash.display.Bitmap;
 	import flash.display.Sprite;
 	import flash.geom.Rectangle;
-
+	
+	import by.blooddy.crypto.image.PNGEncoder;
+	import treefortress.textureutils.MaxRectPacker;
 
 	public class AssetSheet
 	{
-		public function exportAssetSheet(mc:MovieClip, scale:int)
+		public function exportMaxRect(mc:MovieClip)
 		{
-			var pngName = getQualifiedClassName(mc);
-			
-			var bitmapDatas = [];
-			var sheetBitmap:Bitmap = new Bitmap();
+			var bitmapList = [];
 			var bitmapData:BitmapData;
-			var bitmapMinWidth = 0;
 			
 			for(var childId = 0; childId < mc.numChildren; ++childId)
 			{
 				var childMC:MovieClip = mc.getChildAt(childId) as MovieClip;
-				var bitmapData = getMovieClipBitmapData(childMC, scale);
-				bitmapDatas.push(bitmapData);
-				bitmapMinWidth += childMC.width;
+				bitmapData = getMovieClipBitmapData(childMC, 1);
+				bitmapList.push(bitmapData);
 			}
-		
-			bitmapDatas = bitmapDatas.sortOn("height", Array.NUMERIC | Array.DESCENDING);			
-			sheetBitmap.bitmapData = new BitmapData(bitmapMinWidth, bitmapDatas[0].height, true, 0x0);
-
-			var matrix = new Matrix();		
 			
-			for(var bitmapDataId = 0; bitmapDataId < bitmapDatas.length ; ++bitmapDataId)
+			var pow2Sizes = [128, 256, 512, 1024, 2048];
+			var packer:MaxRectPacker;
+			var atlasBitmap:BitmapData;
+			
+			for(var sizeId:int = 0; sizeId < pow2Sizes.length; ++sizeId)
 			{
-				bitmapData = bitmapDatas[bitmapDataId];				
-				
-				if(bitmapDataId > 0)
-				{
-					var previousBitmapData = bitmapDatas[bitmapDataId - 1];
-					matrix.translate(previousBitmapData.width, 0);
-				}
+				var pow2Size = pow2Sizes[sizeId];
+				packer = new MaxRectPacker(pow2Size, pow2Size);
+				atlasBitmap = new BitmapData(pow2Size, pow2Size, true);
 
-				sheetBitmap.bitmapData.draw(bitmapData, matrix);
+				var fittedBitmaps = 0;
+				
+				for(var i:int = 0; i < bitmapList.length; ++i)
+				{
+					bitmapData = bitmapList[i];
+					var rect:Rectangle = packer.quickInsert(bitmapData.width, bitmapData.height);
+					
+					if(!rect)
+					{ 
+						trace("Can't fit into " + pow2Size + "x" + pow2Size + "."); 
+						break; 
+					}
+
+					var m:Matrix = new Matrix();
+					m.translate(rect.x, rect.y);
+					atlasBitmap.draw(bitmapData, m);
+					fittedBitmaps++;
+				}		
+				
+				if(fittedBitmaps == bitmapList.length)
+					break;
 			}
 			
-			var byteArray:ByteArray = PNGEncoder.encode(sheetBitmap.bitmapData);
-			
-			FileExporter.ExportPNG(byteArray, scale, pngName + "-AssetSheet");
+			var byteArray:ByteArray = PNGEncoder.encode(atlasBitmap);
+			FileExporter.ExportPNG(byteArray, 1, getQualifiedClassName(mc) + "-AssetSheet-MaxRect");
 		}
-		
-		function exportMovieClipFrameAsPNG(mc:MovieClip, frameToExport:int, scale:int = 1)
-		{
-			mc.gotoAndStop(frameToExport);
-			
-			var pngName = getQualifiedClassName(mc);
-			var bitmapData = getMovieClipBitmapData(mc, scale);
-			var byteArray:ByteArray = PNGEncoder.encode(bitmapData);
-			
-			FileExporter.ExportPNG(byteArray, scale, pngName);
-		}
-		
+				
 		function getMovieClipBitmapData(mc:MovieClip, scale:int)
 		{
 			var bounds = mc.getBounds(mc);
 			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
 			matrix.scale(scale, scale);
-
-			//addDebugBorder(mc);
 			
 			var bitmap:Bitmap = new Bitmap(new BitmapData(mc.width * scale, mc.height * scale, true, 0x0));
 			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
 			
 			return bitmap.bitmapData;
-		}
-		
-		function addDebugBorder(mc:MovieClip)
-		{
-			var bounds = mc.getBounds(mc);
-			var border:Sprite = new Sprite();			
-			border.graphics.lineStyle(2, 0xFF0000);
-			border.graphics.moveTo(bounds.x, bounds.y);
-			border.graphics.lineTo(bounds.x + bounds.width, bounds.y);
-			border.graphics.lineTo(bounds.x + bounds.width, bounds.y + bounds.height);
-			border.graphics.lineTo(bounds.x, bounds.y + bounds.height);
-			border.graphics.lineTo(bounds.x, bounds.y);
-			mc.addChild(border);
 		}
 	}
 }
