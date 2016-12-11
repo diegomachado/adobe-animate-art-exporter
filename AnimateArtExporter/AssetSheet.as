@@ -17,31 +17,33 @@
 	{
 		public function exportMaxRect(mc:MovieClip)
 		{
-			var bitmapList = [];
-			var bitmapData:BitmapData;
+			var bitmapDatas = getBitmapDatas(mc, 1);
+			trace(bitmapDatas.length);
 			
-			for(var childId = 0; childId < mc.numChildren; ++childId)
-			{
-				var childMC:MovieClip = mc.getChildAt(childId) as MovieClip;
-				bitmapData = getMovieClipBitmapData(childMC, 1);
-				bitmapList.push(bitmapData);
-			}
+			var pow2Sheet = generatePOW2Sheet(bitmapDatas);
 			
+			var byteArray:ByteArray = PNGEncoder.encode(pow2Sheet);
+			FileExporter.ExportPNG(byteArray, 1, getQualifiedClassName(mc) + "-AssetSheet-MaxRect");
+		}
+		
+		function generatePOW2Sheet(bitmapDatas:Array):BitmapData
+		{
 			var pow2Sizes = [128, 256, 512, 1024, 2048];
 			var packer:MaxRectPacker;
-			var atlasBitmap:BitmapData;
+			var pow2Sheet:BitmapData;
 			
 			for(var sizeId:int = 0; sizeId < pow2Sizes.length; ++sizeId)
 			{
 				var pow2Size = pow2Sizes[sizeId];
+				
 				packer = new MaxRectPacker(pow2Size, pow2Size);
-				atlasBitmap = new BitmapData(pow2Size, pow2Size, true);
+				pow2Sheet = new BitmapData(pow2Size, pow2Size, true);
 
 				var fittedBitmaps = 0;
 				
-				for(var i:int = 0; i < bitmapList.length; ++i)
+				for(var i:int = 0; i < bitmapDatas.length; ++i)
 				{
-					bitmapData = bitmapList[i];
+					var bitmapData = bitmapDatas[i];
 					var rect:Rectangle = packer.quickInsert(bitmapData.width, bitmapData.height);
 					
 					if(!rect)
@@ -52,25 +54,53 @@
 
 					var m:Matrix = new Matrix();
 					m.translate(rect.x, rect.y);
-					atlasBitmap.draw(bitmapData, m);
+					pow2Sheet.draw(bitmapData, m);
+					
 					fittedBitmaps++;
 				}		
 				
-				if(fittedBitmaps == bitmapList.length)
+				if(fittedBitmaps == bitmapDatas.length)
 					break;
 			}
 			
-			var byteArray:ByteArray = PNGEncoder.encode(atlasBitmap);
-			FileExporter.ExportPNG(byteArray, 1, getQualifiedClassName(mc) + "-AssetSheet-MaxRect");
+			return pow2Sheet;
+		}
+		
+		function getBitmapDatas(mc:MovieClip, scale:int=1):Array
+		{
+			var bitmapDatas:Array = [];
+		
+			for(var childId = 0; childId < mc.numChildren; ++childId)
+			{
+				var child = mc.getChildAt(childId);
+				
+				if(child is MovieClip)
+				{
+					var childMC:MovieClip = child;
+					trace("Processing ", childMC.name);
+					var bitmapData = getBitmapData(childMC, scale);
+					bitmapDatas.push(bitmapData);
+						
+					if(childMC.numChildren > 1)
+					{
+						trace("----");
+						trace(childMC.name, " has ", childMC.numChildren, " children.");
+						bitmapDatas = bitmapDatas.concat(getBitmapDatas(childMC, scale));
+						trace("----");
+					}
+				}
+			}
+			
+			return bitmapDatas;
 		}
 				
-		function getMovieClipBitmapData(mc:MovieClip, scale:int)
+		function getBitmapData(mc:MovieClip, scale:int)
 		{
 			var bounds = mc.getBounds(mc);
 			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
 			matrix.scale(scale, scale);
 			
-			var bitmap:Bitmap = new Bitmap(new BitmapData(mc.width * scale, mc.height * scale, true, 0x0));
+			var bitmap = new Bitmap(new BitmapData(mc.width * scale, mc.height * scale, true, 0x0));
 			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
 			
 			return bitmap.bitmapData;

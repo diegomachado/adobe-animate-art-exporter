@@ -52,9 +52,9 @@
 		{
 			for(var childId = 0; childId < mc.numChildren; ++childId)
 			{
-				var childMC:MovieClip = mc.getChildAt(childId) as MovieClip;
+				var childMC = mc.getChildAt(childId);
 			
-				if(childMC != null)
+				if(childMC is MovieClip)
 				{
 					var childName = childMC.name;
 					
