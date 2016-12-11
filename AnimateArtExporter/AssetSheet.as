@@ -11,25 +11,22 @@
 	import flash.utils.getQualifiedClassName;
 
 	public class AssetSheet
-	{
-		var movieClipName:String;
+	{		
+		var movieClipName = "";
+		var assetSheetExtension = "-AssetSheet";
 		
 		public function export(mc:MovieClip)
-		{
+		{			
 			movieClipName = getQualifiedClassName(mc);
 			
-			var bitmapDatas = getBitmaps(mc, 1);			
-			var maxRectSolver = new MaxRectSolver(mc, bitmapDatas);
-
-			var sheet = createAssetSheet(bitmapDatas, maxRectSolver);
-			var pngFileName = movieClipName + "-AssetSheet";			
-			FileExporter.ExportPNG(sheet, pngFileName);
+			var bitmaps = getBitmaps(mc, 1);			
+			var maxRectSolver = new MaxRectSolver(mc, bitmaps);
 			
-			var framesJSON = createFramesJSON(maxRectSolver, pngFileName);
-			FileExporter.ExportJSON(framesJSON, movieClipName + "-Frames");
+			createAssetSheet(bitmaps, maxRectSolver);			
+			createFramesJSON(maxRectSolver);
 		}
 		
-		function createAssetSheet(bitmaps:Object, maxRectSolver:MaxRectSolver):BitmapData
+		function createAssetSheet(bitmaps:Object, maxRectSolver:MaxRectSolver)
 		{
 			var maxRects = maxRectSolver.getRectangles();
 			var maxRectSize = maxRectSolver.getSize();
@@ -45,7 +42,7 @@
 				assetSheet.draw(bitmap, m);
 			}
 		
-			return assetSheet;
+			FileExporter.ExportPNG(assetSheet, movieClipName + assetSheetExtension);
 		}
 		
 		function getBitmaps(mc:MovieClip, scale:int=1)
@@ -99,7 +96,7 @@
 			}
 		}
 		
-		function createFramesJSON(maxRectSolver:MaxRectSolver, pngFileName:String):String
+		function createFramesJSON(maxRectSolver:MaxRectSolver)
 		{
 			var rectangles = maxRectSolver.getRectangles();
 			var pngSize = maxRectSolver.getSize();
@@ -120,11 +117,12 @@
 				framesJSON["frames"].push(frameJSON);
 			}
 			
-			framesJSON["meta"]["image"] = pngFileName + ".png";
-			framesJSON["meta"]["size"] = {"w":pngSize,"h":pngSize};
+			framesJSON["meta"]["image"] = movieClipName + assetSheetExtension + ".png";
+			framesJSON["meta"]["size"] = { "w": pngSize, "h": pngSize };
 			framesJSON["meta"]["scale"] = 1;
 
-			return JSON.stringify(framesJSON, function(k,v) { return v }, 2);
+			framesJSON = JSON.stringify(framesJSON, function(k,v) { return v }, 2);
+			FileExporter.ExportJSON(framesJSON, movieClipName + "-Frames");
 		}
 	}
 }

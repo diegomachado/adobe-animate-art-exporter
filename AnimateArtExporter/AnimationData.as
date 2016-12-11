@@ -22,7 +22,7 @@
 				return v;
 			}, 2);
 			
-			FileExporter.ExportJSON(animationsJSON, getQualifiedClassName(sourceMC) + "-anim");
+			FileExporter.ExportJSON(animationsJSON, getQualifiedClassName(sourceMC) + "-AnimationData");
 		}
 		
 		function extractEntityData(mc:MovieClip)
