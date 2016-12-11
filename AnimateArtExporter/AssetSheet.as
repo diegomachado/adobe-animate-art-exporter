@@ -1,36 +1,56 @@
 ﻿package AnimateArtExporter
 {	
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
-	import flash.geom.Matrix;
-	import flash.utils.ByteArray;
-	import flash.utils.getQualifiedClassName;	
-	import flash.display.BitmapData;
-	import flash.display.Bitmap;
 	import flash.display.Sprite;
+	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
-	
-	import by.blooddy.crypto.image.PNGEncoder;
-	import treefortress.textureutils.MaxRectPacker;
+	import flash.utils.ByteArray;
+	import flash.utils.getQualifiedClassName;
 
 	public class AssetSheet
 	{
-		public function exportMaxRect(mc:MovieClip)
+		var movieClipName:String;
+		
+		public function export(mc:MovieClip)
 		{
-			trace("Extracting BitmapDatas from", getQualifiedClassName(mc), ":");
-			var bitmapDatas = getBitmapDatas(mc, 1);
-			trace("----------");
+			movieClipName = getQualifiedClassName(mc);
 			
-			trace("Generating POW2 Sheet:");
-			var pow2Sheet = generatePOW2Sheet(bitmapDatas);
+			var bitmapDatas = getBitmaps(mc, 1);			
+			var maxRectSolver = new MaxRectSolver(mc, bitmapDatas);
+
+			var sheet = createAssetSheet(bitmapDatas, maxRectSolver);
+			var pngFileName = movieClipName + "-AssetSheet";			
+			FileExporter.ExportPNG(sheet, pngFileName);
 			
-			var byteArray:ByteArray = PNGEncoder.encode(pow2Sheet);
-			FileExporter.ExportPNG(byteArray, 1, getQualifiedClassName(mc) + "-AssetSheet");
+			var framesJSON = createFramesJSON(maxRectSolver, pngFileName);
+			FileExporter.ExportJSON(framesJSON, movieClipName + "-Frames");
 		}
 		
-		function getBitmapDatas(mc:MovieClip, scale:int=1):Array
+		function createAssetSheet(bitmaps:Object, maxRectSolver:MaxRectSolver):BitmapData
 		{
-			var bitmapDatas:Array = [];
+			var maxRects = maxRectSolver.getRectangles();
+			var maxRectSize = maxRectSolver.getSize();
+			var assetSheet = new BitmapData(maxRectSize, maxRectSize, true);
+			
+			for(var bitmapId in bitmaps)
+			{
+				var bitmap = bitmaps[bitmapId];
+				var rect = maxRects[bitmapId];
+				
+				var m:Matrix = new Matrix();
+				m.translate(rect.x, rect.y);
+				assetSheet.draw(bitmap, m);
+			}
+		
+			return assetSheet;
+		}
+		
+		function getBitmaps(mc:MovieClip, scale:int=1)
+		{
+			var bitmaps = {};
 		
 			for(var childId = 0; childId < mc.numChildren; ++childId)
 			{
@@ -38,32 +58,29 @@
 				
 				if(child is MovieClip)
 				{
-					var childMC:MovieClip = child;
-					trace(".", childMC.name);
-					var bitmapData = getBitmapData(childMC, scale);
-					bitmapDatas.push(bitmapData);
+					var childMC = child as MovieClip;
+					var bitmap = getBitmap(childMC, scale);
+					bitmaps[childMC.name] = bitmap;
 						
 					if(childMC.numChildren > 1)
 					{
-						trace("----");
-						trace(childMC.name, "has", childMC.numChildren, "children:");
-						bitmapDatas = bitmapDatas.concat(getBitmapDatas(childMC, scale));
-						trace("----");
+						var nestedBitmaps = getBitmaps(childMC, scale);
+						for(var nestedBitmapId in nestedBitmaps)
+							bitmaps[nestedBitmapId] = nestedBitmaps[nestedBitmapId];
 					}
 				}
 			}
 			
-			return bitmapDatas;
+			return bitmaps;
 		}
 				
-		function getBitmapData(mc:MovieClip, scale:int)
+		function getBitmap(mc:MovieClip, scale:int):BitmapData
 		{
 			var bounds = mc.getBounds(mc);
 			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
 			matrix.scale(scale, scale);
 			
 			var bitmap = new Bitmap(new BitmapData(mc.width * scale, mc.height * scale, true, 0x0));
-			
 			toggleChildrenVisibility(mc, false);
 			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
 			toggleChildrenVisibility(mc, true);
@@ -82,44 +99,32 @@
 			}
 		}
 		
-		function generatePOW2Sheet(bitmapDatas:Array):BitmapData
+		function createFramesJSON(maxRectSolver:MaxRectSolver, pngFileName:String):String
 		{
-			var pow2Sizes = [128, 256, 512, 1024, 2048];
-			var packer:MaxRectPacker;
-			var pow2Sheet:BitmapData;
+			var rectangles = maxRectSolver.getRectangles();
+			var pngSize = maxRectSolver.getSize();
 			
-			for(var sizeId:int = 0; sizeId < pow2Sizes.length; ++sizeId)
+			var framesJSON = {}
+			framesJSON["meta"] = {};
+			framesJSON["frames"] = [];
+			
+			for(var frameId in rectangles)
 			{
-				var pow2Size = pow2Sizes[sizeId];
+				var rect = rectangles[frameId];
+				var frameJSON = {};
 				
-				packer = new MaxRectPacker(pow2Size, pow2Size);
-				pow2Sheet = new BitmapData(pow2Size, pow2Size, true);
-
-				var fittedBitmaps = 0;
-				
-				for(var i:int = 0; i < bitmapDatas.length; ++i)
-				{
-					var bitmapData = bitmapDatas[i];
-					var rect:Rectangle = packer.quickInsert(bitmapData.width, bitmapData.height);
-					
-					if(!rect)
-					{ 
-						trace(". Can't fit into " + pow2Size + ". Trying " + pow2Sizes[sizeId+1] + "."); 
-						break; 
-					}
-
-					var m:Matrix = new Matrix();
-					m.translate(rect.x, rect.y);
-					pow2Sheet.draw(bitmapData, m);
-					
-					fittedBitmaps++;
-				}		
-				
-				if(fittedBitmaps == bitmapDatas.length)
-					break;
+				frameJSON["filename"] = frameId;
+				frameJSON["frame"] = { "x": rect.x, "y": rect.y, "w": rect.width, "h": rect.height };
+				frameJSON["rotated"] = false;
+				frameJSON["trimmed"] = false;
+				framesJSON["frames"].push(frameJSON);
 			}
 			
-			return pow2Sheet;
+			framesJSON["meta"]["image"] = pngFileName + ".png";
+			framesJSON["meta"]["size"] = {"w":pngSize,"h":pngSize};
+			framesJSON["meta"]["scale"] = 1;
+
+			return JSON.stringify(framesJSON, function(k,v) { return v }, 2);
 		}
 	}
 }

@@ -4,13 +4,17 @@
 	import flash.filesystem.File;
 	import flash.filesystem.FileStream;
 	import flash.filesystem.FileMode;
+	import flash.display.BitmapData;
+	
+	import by.blooddy.crypto.image.PNGEncoder;
 
 	public class FileExporter
 	{
 		var _swfName:String;
 		
-		public static function ExportPNG(bytes:ByteArray, scale:int, filePath:String)
+		public static function ExportPNG(bitmapData:BitmapData, filePath:String, scale:int=1)
 		{
+			var bytes:ByteArray = PNGEncoder.encode(bitmapData);
 			FileExporter.saveFile(bytes, "export/" + filePath + "@" + scale + "x.png");
 		}
 

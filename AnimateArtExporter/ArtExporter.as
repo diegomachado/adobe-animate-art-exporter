@@ -24,14 +24,10 @@
 			assetSheet = new AssetSheet();
 		}
 		
-		public function exportAnimationData(mc:MovieClip)
-		{
-			animationData.exportJSONAnimations(mc);
-		}
-		
 		public function exportAssetSheet(mc:MovieClip)
 		{
-			assetSheet.exportMaxRect(mc);
+			assetSheet.export(mc);
+			animationData.export(mc);
 		}
 	}
 }

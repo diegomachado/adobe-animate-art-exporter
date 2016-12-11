@@ -7,7 +7,7 @@
 	
 	public class AnimationData
 	{
-		public function exportJSONAnimations(sourceMC:MovieClip)
+		public function export(sourceMC:MovieClip)
 		{
 			var animationsData = extractEntityData(sourceMC);
 			
