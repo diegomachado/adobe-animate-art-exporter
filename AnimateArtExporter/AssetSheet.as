@@ -17,13 +17,69 @@
 	{
 		public function exportMaxRect(mc:MovieClip)
 		{
+			trace("Extracting BitmapDatas from", getQualifiedClassName(mc), ":");
 			var bitmapDatas = getBitmapDatas(mc, 1);
-			trace(bitmapDatas.length);
+			trace("----------");
 			
+			trace("Generating POW2 Sheet:");
 			var pow2Sheet = generatePOW2Sheet(bitmapDatas);
 			
 			var byteArray:ByteArray = PNGEncoder.encode(pow2Sheet);
-			FileExporter.ExportPNG(byteArray, 1, getQualifiedClassName(mc) + "-AssetSheet-MaxRect");
+			FileExporter.ExportPNG(byteArray, 1, getQualifiedClassName(mc) + "-AssetSheet");
+		}
+		
+		function getBitmapDatas(mc:MovieClip, scale:int=1):Array
+		{
+			var bitmapDatas:Array = [];
+		
+			for(var childId = 0; childId < mc.numChildren; ++childId)
+			{
+				var child = mc.getChildAt(childId);
+				
+				if(child is MovieClip)
+				{
+					var childMC:MovieClip = child;
+					trace(".", childMC.name);
+					var bitmapData = getBitmapData(childMC, scale);
+					bitmapDatas.push(bitmapData);
+						
+					if(childMC.numChildren > 1)
+					{
+						trace("----");
+						trace(childMC.name, "has", childMC.numChildren, "children:");
+						bitmapDatas = bitmapDatas.concat(getBitmapDatas(childMC, scale));
+						trace("----");
+					}
+				}
+			}
+			
+			return bitmapDatas;
+		}
+				
+		function getBitmapData(mc:MovieClip, scale:int)
+		{
+			var bounds = mc.getBounds(mc);
+			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
+			matrix.scale(scale, scale);
+			
+			var bitmap = new Bitmap(new BitmapData(mc.width * scale, mc.height * scale, true, 0x0));
+			
+			toggleChildrenVisibility(mc, false);
+			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
+			toggleChildrenVisibility(mc, true);
+			
+			return bitmap.bitmapData;
+		}
+		
+		function toggleChildrenVisibility(mc:MovieClip, isVisible:Boolean)
+		{
+			for(var childId = 0; childId < mc.numChildren; ++childId)
+			{
+				var child = mc.getChildAt(childId);
+				
+				if(child is MovieClip)
+					child.visible = isVisible;
+			}
 		}
 		
 		function generatePOW2Sheet(bitmapDatas:Array):BitmapData
@@ -48,7 +104,7 @@
 					
 					if(!rect)
 					{ 
-						trace("Can't fit into " + pow2Size + "x" + pow2Size + "."); 
+						trace(". Can't fit into " + pow2Size + ". Trying " + pow2Sizes[sizeId+1] + "."); 
 						break; 
 					}
 
@@ -64,46 +120,6 @@
 			}
 			
 			return pow2Sheet;
-		}
-		
-		function getBitmapDatas(mc:MovieClip, scale:int=1):Array
-		{
-			var bitmapDatas:Array = [];
-		
-			for(var childId = 0; childId < mc.numChildren; ++childId)
-			{
-				var child = mc.getChildAt(childId);
-				
-				if(child is MovieClip)
-				{
-					var childMC:MovieClip = child;
-					trace("Processing ", childMC.name);
-					var bitmapData = getBitmapData(childMC, scale);
-					bitmapDatas.push(bitmapData);
-						
-					if(childMC.numChildren > 1)
-					{
-						trace("----");
-						trace(childMC.name, " has ", childMC.numChildren, " children.");
-						bitmapDatas = bitmapDatas.concat(getBitmapDatas(childMC, scale));
-						trace("----");
-					}
-				}
-			}
-			
-			return bitmapDatas;
-		}
-				
-		function getBitmapData(mc:MovieClip, scale:int)
-		{
-			var bounds = mc.getBounds(mc);
-			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
-			matrix.scale(scale, scale);
-			
-			var bitmap = new Bitmap(new BitmapData(mc.width * scale, mc.height * scale, true, 0x0));
-			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
-			
-			return bitmap.bitmapData;
 		}
 	}
 }
