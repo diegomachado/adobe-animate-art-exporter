@@ -9,14 +9,16 @@
 	public class SpriteSheet
 	{
 		var movieClipName = "";
+		var _scale:int;
 		var spriteSheetExtension = "-SpriteSheet";
 		
-		public function export(mc:MovieClip)
+		public function export(mc:MovieClip, scale:int, sheetPadding:int)
 		{
 			movieClipName = getQualifiedClassName(mc);
+			_scale = scale;
 			
 			var bitmaps = getBitmaps(mc);
-			var maxRectSolver = new MaxRectSolver(mc, bitmaps);
+			var maxRectSolver = new MaxRectSolver(mc, bitmaps, _scale, sheetPadding);
 			
 			var spriteSheetName = createSpriteSheet(bitmaps, maxRectSolver);
 			
@@ -40,7 +42,7 @@
 				spriteSheet.draw(bitmap, m);
 			}
 		
-			return FileExporter.ExportPNG(spriteSheet, movieClipName + spriteSheetExtension);
+			return FileExporter.ExportPNG(spriteSheet, movieClipName + spriteSheetExtension, _scale);
 		}
 		
 		function getBitmaps(mc:MovieClip)
@@ -53,15 +55,15 @@
 			return bitmaps;
 		}
 		
-		function getFrameBitmap(mc:MovieClip, frame:int, scale:int=1):BitmapData
+		function getFrameBitmap(mc:MovieClip, frame:int):BitmapData
 		{
 			mc.gotoAndStop(frame);
 			
 			var bounds = mc.getBounds(mc);
 			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
-			matrix.scale(scale, scale);
+			matrix.scale(_scale, _scale);
 			
-			var bitmap = new Bitmap(new BitmapData(mc.width * scale, mc.height * scale, true, 0x0));
+			var bitmap = new Bitmap(new BitmapData(mc.width * _scale, mc.height * _scale, true, 0x0));
 			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
 			
 			return bitmap.bitmapData;

@@ -27,17 +27,18 @@
 			spriteSheet = new SpriteSheet();
 		}
 		
-		public function exportAssetSheet(mc:MovieClip, scales:Array)
+		public function exportAssetSheet(mc:MovieClip, scales:Array, sheetPadding:int=0)
 		{
 			for(var scaleId in scales)
-				assetSheet.export(mc, scales[scaleId]);
+				assetSheet.export(mc, scales[scaleId], sheetPadding);
 			
 			animationData.export(mc);
 		}
 		
-		public function exportSpriteSheet(mc:MovieClip)
+		public function exportSpriteSheet(mc:MovieClip, scales:Array, sheetPadding:int=0)
 		{
-			spriteSheet.export(mc);
+			for(var scaleId in scales)
+				spriteSheet.export(mc, scales[scaleId], sheetPadding);
 		}
 	}
 }

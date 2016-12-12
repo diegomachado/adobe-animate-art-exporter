@@ -13,16 +13,16 @@
 	public class AssetSheet
 	{		
 		var _movieClipName = "";
-		var _assetSheetExtension = "-AssetSheet";
 		var _scale:int;
+		var _assetSheetExtension = "-AssetSheet";
 		
-		public function export(mc:MovieClip, scale:int=1)
+		public function export(mc:MovieClip, scale:int, sheetPadding:int)
 		{			
 			_movieClipName = getQualifiedClassName(mc);
 			_scale = scale;
 			
 			var bitmaps = getBitmaps(mc);			
-			var maxRectSolver = new MaxRectSolver(mc, bitmaps);
+			var maxRectSolver = new MaxRectSolver(mc, bitmaps, _scale, sheetPadding);
 			
 			var assetSheetFileName = createAssetSheet(bitmaps, maxRectSolver);			
 			

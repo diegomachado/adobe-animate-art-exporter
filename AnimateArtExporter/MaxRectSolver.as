@@ -8,11 +8,15 @@
 	{
 		var _rectangles:Object;
 		var _size:int;
+		var _scale:int;
+		var _padding:int;
 		
-		function MaxRectSolver(mc:MovieClip, bitmapDatas:Object)
+		function MaxRectSolver(mc:MovieClip, bitmapDatas:Object, scale:int, padding:int)
 		{
 			_rectangles = {};
 			_size = 0;
+			_scale = scale;
+			_padding = padding;
 			solve(mc, bitmapDatas);
 		}
 		
@@ -37,10 +41,15 @@
 				for(var bitmapDataId in bitmapDatas)
 				{
 					var bitmapData = bitmapDatas[bitmapDataId];
-					var fittedRectangle = packer.quickInsert(bitmapData.width, bitmapData.height);
+					var fittedRectangle = packer.quickInsert(bitmapData.width + _padding * _scale * 2, bitmapData.height + _padding * _scale * 2);
 					
 					if(!fittedRectangle)
 						break; 
+					
+					fittedRectangle.x += _padding * _scale;
+					fittedRectangle.y += _padding * _scale;
+					fittedRectangle.width -= _padding * _scale * 2;
+					fittedRectangle.height -= _padding * _scale * 2;
 					
 					rectangles[bitmapDataId] = fittedRectangle;
 					fittedRectangles++;
