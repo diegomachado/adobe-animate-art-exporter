@@ -55,6 +55,31 @@
 			}
 		}
 		
+		public function exportFramesJSON(fileName):String
+		{
+			var framesJSON = {}
+			framesJSON["meta"] = {};
+			framesJSON["frames"] = [];
+			
+			for(var frameId in _rectangles)
+			{
+				var rect = _rectangles[frameId];
+				var frameJSON = {};
+				
+				frameJSON["filename"] = String(frameId);
+				frameJSON["frame"] = { "x": rect.x, "y": rect.y, "w": rect.width, "h": rect.height };
+				//frameJSON["rotated"] = false;
+				//frameJSON["trimmed"] = false;
+				framesJSON["frames"].push(frameJSON);
+			}
+			
+			framesJSON["meta"]["image"] = fileName;
+			framesJSON["meta"]["size"] = { "w": _size, "h": _size };
+			framesJSON["meta"]["scale"] = 1;
+			
+			return JSON.stringify(framesJSON, function(k,v) { return v }, 2);
+		}
+		
 		public function getRectangles()
 		{
 			return (Utils.mapSize(_rectangles) > 1) ? _rectangles : [];

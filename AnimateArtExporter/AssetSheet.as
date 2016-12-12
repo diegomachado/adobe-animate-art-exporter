@@ -12,21 +12,25 @@
 
 	public class AssetSheet
 	{		
-		var movieClipName = "";
-		var assetSheetExtension = "-AssetSheet";
+		var _movieClipName = "";
+		var _assetSheetExtension = "-AssetSheet";
+		var _scale:int;
 		
-		public function export(mc:MovieClip)
+		public function export(mc:MovieClip, scale:int=1)
 		{			
-			movieClipName = getQualifiedClassName(mc);
+			_movieClipName = getQualifiedClassName(mc);
+			_scale = scale;
 			
-			var bitmaps = getBitmaps(mc, 1);			
+			var bitmaps = getBitmaps(mc);			
 			var maxRectSolver = new MaxRectSolver(mc, bitmaps);
 			
-			createAssetSheet(bitmaps, maxRectSolver);			
-			createFramesJSON(maxRectSolver);
+			var assetSheetFileName = createAssetSheet(bitmaps, maxRectSolver);			
+			
+			var framesJSON = maxRectSolver.exportFramesJSON(assetSheetFileName);
+			FileExporter.ExportJSON(framesJSON, assetSheetFileName + "-Frames");
 		}
 		
-		function createAssetSheet(bitmaps:Object, maxRectSolver:MaxRectSolver)
+		function createAssetSheet(bitmaps:Object, maxRectSolver:MaxRectSolver):String
 		{
 			var maxRects = maxRectSolver.getRectangles();
 			var maxRectSize = maxRectSolver.getSize();
@@ -41,11 +45,11 @@
 				m.translate(rect.x, rect.y);
 				assetSheet.draw(bitmap, m);
 			}
-		
-			FileExporter.ExportPNG(assetSheet, movieClipName + assetSheetExtension);
+			
+			return FileExporter.ExportPNG(assetSheet, _movieClipName + _assetSheetExtension, _scale);
 		}
 		
-		function getBitmaps(mc:MovieClip, scale:int=1)
+		function getBitmaps(mc:MovieClip)
 		{
 			var bitmaps = {};
 		
@@ -56,12 +60,12 @@
 				if(child is MovieClip)
 				{
 					var childMC = child as MovieClip;
-					var bitmap = getBitmap(childMC, scale);
+					var bitmap = getBitmap(childMC);
 					bitmaps[childMC.name] = bitmap;
 						
 					if(childMC.numChildren > 1)
 					{
-						var nestedBitmaps = getBitmaps(childMC, scale);
+						var nestedBitmaps = getBitmaps(childMC);
 						for(var nestedBitmapId in nestedBitmaps)
 							bitmaps[nestedBitmapId] = nestedBitmaps[nestedBitmapId];
 					}
@@ -71,13 +75,13 @@
 			return bitmaps;
 		}
 				
-		function getBitmap(mc:MovieClip, scale:int):BitmapData
+		function getBitmap(mc:MovieClip):BitmapData
 		{
 			var bounds = mc.getBounds(mc);
 			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
-			matrix.scale(scale, scale);
+			matrix.scale(_scale, _scale);
 			
-			var bitmap = new Bitmap(new BitmapData(mc.width * scale, mc.height * scale, true, 0x0));
+			var bitmap = new Bitmap(new BitmapData(mc.width * _scale, mc.height * _scale, true, 0x0));
 			toggleChildrenVisibility(mc, false);
 			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
 			toggleChildrenVisibility(mc, true);
@@ -94,35 +98,6 @@
 				if(child is MovieClip)
 					child.visible = isVisible;
 			}
-		}
-		
-		function createFramesJSON(maxRectSolver:MaxRectSolver)
-		{
-			var rectangles = maxRectSolver.getRectangles();
-			var pngSize = maxRectSolver.getSize();
-			
-			var framesJSON = {}
-			framesJSON["meta"] = {};
-			framesJSON["frames"] = [];
-			
-			for(var frameId in rectangles)
-			{
-				var rect = rectangles[frameId];
-				var frameJSON = {};
-				
-				frameJSON["filename"] = frameId;
-				frameJSON["frame"] = { "x": rect.x, "y": rect.y, "w": rect.width, "h": rect.height };
-				frameJSON["rotated"] = false;
-				frameJSON["trimmed"] = false;
-				framesJSON["frames"].push(frameJSON);
-			}
-			
-			framesJSON["meta"]["image"] = movieClipName + assetSheetExtension + ".png";
-			framesJSON["meta"]["size"] = { "w": pngSize, "h": pngSize };
-			framesJSON["meta"]["scale"] = 1;
-
-			framesJSON = JSON.stringify(framesJSON, function(k,v) { return v }, 2);
-			FileExporter.ExportJSON(framesJSON, movieClipName + "-Frames");
 		}
 	}
 }

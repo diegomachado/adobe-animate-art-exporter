@@ -18,10 +18,13 @@
 			var bitmaps = getBitmaps(mc);
 			var maxRectSolver = new MaxRectSolver(mc, bitmaps);
 			
-			createSpriteSheet(bitmaps, maxRectSolver);
+			var spriteSheetName = createSpriteSheet(bitmaps, maxRectSolver);
+			
+			var framesJSON = maxRectSolver.exportFramesJSON(spriteSheetName);
+			FileExporter.ExportJSON(framesJSON, spriteSheetName + "-Frames");
 		}
 		
-		function createSpriteSheet(bitmaps:Array, maxRectSolver:MaxRectSolver)
+		function createSpriteSheet(bitmaps:Array, maxRectSolver:MaxRectSolver):String
 		{
 			var maxRects = maxRectSolver.getRectangles();
 			var maxRectSize = maxRectSolver.getSize();
@@ -37,7 +40,7 @@
 				spriteSheet.draw(bitmap, m);
 			}
 		
-			FileExporter.ExportPNG(spriteSheet, movieClipName + spriteSheetExtension);
+			return FileExporter.ExportPNG(spriteSheet, movieClipName + spriteSheetExtension);
 		}
 		
 		function getBitmaps(mc:MovieClip)

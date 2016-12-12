@@ -12,18 +12,25 @@
 	{
 		var _swfName:String;
 		
-		public static function ExportPNG(bitmapData:BitmapData, filePath:String, scale:int=1)
+		public static function ExportPNG(bitmapData:BitmapData, filePath:String, scale:int=1):String
 		{
+			var fileName = filePath + "@" + scale + "x.png";
 			var bytes:ByteArray = PNGEncoder.encode(bitmapData);
-			FileExporter.saveFile(bytes, "export/" + filePath + "@" + scale + "x.png");
+			
+			FileExporter.saveFile(bytes, "export/" + fileName);
+			
+			return fileName;
 		}
 
 		public static function ExportJSON(json:String, filePath:String)
 		{
+			var fileName = filePath + ".json";
 			var bytes:ByteArray = new ByteArray();
 			bytes.writeMultiByte(json, "iso-8859-1");
 			
-			FileExporter.saveFile(bytes, "export/" + filePath + ".json");
+			FileExporter.saveFile(bytes, "export/" + fileName);
+			
+			return fileName;
 		}
 		
 		private static function saveFile(bytes:ByteArray, path:String)

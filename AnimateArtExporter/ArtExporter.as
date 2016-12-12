@@ -27,9 +27,11 @@
 			spriteSheet = new SpriteSheet();
 		}
 		
-		public function exportAssetSheet(mc:MovieClip)
+		public function exportAssetSheet(mc:MovieClip, scales:Array)
 		{
-			assetSheet.export(mc);
+			for(var scaleId in scales)
+				assetSheet.export(mc, scales[scaleId]);
+			
 			animationData.export(mc);
 		}
 		
