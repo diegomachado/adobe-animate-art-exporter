@@ -10,12 +10,16 @@
 	{
 		var movieClipName = "";
 		var _scale:int;
+		var _transparentBG:Boolean;
+		var _bgColor:uint;
 		var spriteSheetExtension = "-SpriteSheet";
 		
-		public function export(mc:MovieClip, scale:int, sheetPadding:int)
+		public function export(mc:MovieClip, scale:int, sheetPadding:int, transparentBG:Boolean)
 		{
 			movieClipName = getQualifiedClassName(mc);
 			_scale = scale;
+			_transparentBG = transparentBG;
+			_bgColor = _transparentBG ? 0x0 : 0xFFFF00FF;
 			
 			var bitmaps = getBitmaps(mc);
 			var maxRectSolver = new MaxRectSolver(mc, bitmaps, _scale, sheetPadding);
@@ -30,7 +34,7 @@
 		{
 			var maxRects = maxRectSolver.getRectangles();
 			var maxRectSize = maxRectSolver.getSize();
-			var spriteSheet = new BitmapData(maxRectSize, maxRectSize, true);
+			var spriteSheet = new BitmapData(maxRectSize, maxRectSize, _transparentBG, _bgColor);
 			
 			for(var bitmapId = 0; bitmapId < bitmaps.length; ++bitmapId)
 			{
@@ -63,7 +67,7 @@
 			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
 			matrix.scale(_scale, _scale);
 			
-			var bitmap = new Bitmap(new BitmapData(mc.width * _scale, mc.height * _scale, true, 0x0));
+			var bitmap:Bitmap = new Bitmap(new BitmapData(mc.width * _scale, mc.height * _scale, _transparentBG, _bgColor));
 			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
 			
 			return bitmap.bitmapData;

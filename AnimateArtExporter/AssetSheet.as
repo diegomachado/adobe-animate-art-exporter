@@ -14,12 +14,16 @@
 	{		
 		var _movieClipName = "";
 		var _scale:int;
+		var _bgColor:uint;
 		var _assetSheetExtension = "-AssetSheet";
+		var _transparentBG:Boolean;
 		
-		public function export(mc:MovieClip, scale:int, sheetPadding:int)
+		public function export(mc:MovieClip, scale:int, sheetPadding:int, transparentBG:Boolean)
 		{			
 			_movieClipName = getQualifiedClassName(mc);
 			_scale = scale;
+			_transparentBG = transparentBG;
+			_bgColor = _transparentBG ? 0x0 : 0xFFFF00FF;
 			
 			var bitmaps = getBitmaps(mc);			
 			var maxRectSolver = new MaxRectSolver(mc, bitmaps, _scale, sheetPadding);
@@ -34,7 +38,7 @@
 		{
 			var maxRects = maxRectSolver.getRectangles();
 			var maxRectSize = maxRectSolver.getSize();
-			var assetSheet = new BitmapData(maxRectSize, maxRectSize, true);
+			var assetSheet = new BitmapData(maxRectSize, maxRectSize, true, _bgColor);
 			
 			for(var bitmapId in bitmaps)
 			{
@@ -81,7 +85,7 @@
 			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
 			matrix.scale(_scale, _scale);
 			
-			var bitmap = new Bitmap(new BitmapData(mc.width * _scale, mc.height * _scale, true, 0x0));
+			var bitmap = new Bitmap(new BitmapData(mc.width * _scale, mc.height * _scale, true, _bgColor));
 			toggleChildrenVisibility(mc, false);
 			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
 			toggleChildrenVisibility(mc, true);

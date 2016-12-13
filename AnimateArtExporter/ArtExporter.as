@@ -27,18 +27,18 @@
 			spriteSheet = new SpriteSheet();
 		}
 		
-		public function exportAssetSheet(mc:MovieClip, scales:Array, sheetPadding:int=0)
+		public function exportAssetSheet(mc:MovieClip, scales:Array, sheetPadding:int=0, transparentBG:Boolean=true)
 		{
 			for(var scaleId in scales)
-				assetSheet.export(mc, scales[scaleId], sheetPadding);
+				assetSheet.export(mc, scales[scaleId], sheetPadding, transparentBG);
 			
 			animationData.export(mc);
 		}
 		
-		public function exportSpriteSheet(mc:MovieClip, scales:Array, sheetPadding:int=0)
+		public function exportSpriteSheet(mc:MovieClip, scales:Array, sheetPadding:int=0, transparentBG:Boolean=true)
 		{
 			for(var scaleId in scales)
-				spriteSheet.export(mc, scales[scaleId], sheetPadding);
+				spriteSheet.export(mc, scales[scaleId], sheetPadding, transparentBG);
 		}
 	}
 }
