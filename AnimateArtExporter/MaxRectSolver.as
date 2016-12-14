@@ -89,12 +89,12 @@
 			return JSON.stringify(framesJSON, function(k,v) { return v }, 2);
 		}
 		
-		public function getRectangles()
+		public function getRectangles():Object
 		{
 			return (Utils.mapSize(_rectangles) > 1) ? _rectangles : [];
 		}
 		
-		public function getSize()
+		public function getSize():int
 		{
 			return _size;
 		}

@@ -11,34 +11,46 @@
 	public class ArtExporter
 	{
 		public static var swfName:String;
-		private var animationData:AnimationData;
-		private var assetSheet:AssetSheet;
-		private var spriteSheet:SpriteSheet;
+		
+		var _animationData:AnimationData;
+		var _assetSheet:AssetSheet;
+		var _spriteSheet:SpriteSheet;
+		
+		var _movieClip:MovieClip;
+		var _padding:uint;
+		var _transparentBackground:Boolean;
+		var _scalesToExport:Array;
+		
 
-		public function init(root:DisplayObjectContainer)
+		public function init(root:DisplayObjectContainer, config:ArtExporterConfig)
 		{
 			var swf = root.loaderInfo.url;
 			swf = swf.slice(swf.lastIndexOf("/") + 1);
 			swf = swf.slice(0, swf.indexOf("."));
 			swfName = swf;
 			
-			animationData = new AnimationData();
-			assetSheet = new AssetSheet();
-			spriteSheet = new SpriteSheet();
-		}
-		
-		public function exportAssetSheet(mc:MovieClip, scales:Array, sheetPadding:int=0, transparentBG:Boolean=true)
-		{
-			for(var scaleId in scales)
-				assetSheet.export(mc, scales[scaleId], sheetPadding, transparentBG);
+			_movieClip = config.movieClip;
+			_padding = config.padding;
+			_transparentBackground = config.transparentBackground;
+			_scalesToExport = config.scalesToExport;
 			
-			animationData.export(mc);
+			_animationData = new AnimationData();
+			_assetSheet = new AssetSheet();
+			_spriteSheet = new SpriteSheet();
 		}
 		
-		public function exportSpriteSheet(mc:MovieClip, scales:Array, sheetPadding:int=0, transparentBG:Boolean=true)
+		public function exportAssetSheet()
 		{
-			for(var scaleId in scales)
-				spriteSheet.export(mc, scales[scaleId], sheetPadding, transparentBG);
+			for(var scaleId in _scalesToExport)
+				_assetSheet.export(_movieClip, _scalesToExport[scaleId], _padding, _transparentBackground);
+			
+			_animationData.export(_movieClip);
+		}
+		
+		public function exportSpriteSheet()
+		{
+			for(var scaleId in _scalesToExport)
+				_spriteSheet.export(_movieClip, _scalesToExport[scaleId], _padding, _transparentBackground);
 		}
 	}
 }
