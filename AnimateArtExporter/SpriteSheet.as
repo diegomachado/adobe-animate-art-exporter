@@ -54,7 +54,22 @@
 			var bitmaps = [];
 			
 			for(var frameId = 0; frameId < mc.totalFrames; ++frameId)
-				bitmaps.push(getFrameBitmap(mc, frameId));
+			{
+				var frameBitmap:BitmapData = getFrameBitmap(mc, frameId);
+				
+				var newBitmap = true;
+				for each(var bitmap in bitmaps)
+				{
+					if(frameBitmap.compare(bitmap) == 0)
+					{
+						newBitmap = false;
+						break;
+					}
+				}
+				
+				if(newBitmap)
+					bitmaps.push(frameBitmap);
+			}
 
 			return bitmaps;
 		}

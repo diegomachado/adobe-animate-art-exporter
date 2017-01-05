@@ -25,7 +25,7 @@
 			_transparentBG = transparentBG;
 			_bgColor = _transparentBG ? 0x0 : 0xFFFF00FF;
 			
-			var bitmaps = getBitmaps(mc);			
+			var bitmaps = getBitmaps(mc);
 			var maxRectSolver = new MaxRectSolver(mc, bitmaps, _scale, sheetPadding);
 			
 			var assetSheetFileName = createAssetSheet(bitmaps, maxRectSolver);			
@@ -63,13 +63,25 @@
 				
 				if(child is MovieClip)
 				{
-					var childMC = child as MovieClip;
-					var bitmap = getBitmap(childMC);
-					bitmaps[childMC.name] = bitmap;
-						
-					if(childMC.numChildren > 1)
+					var childMC:MovieClip = child as MovieClip;
+
+					if(childMC.currentFrameLabel == "spritesheet")
+					{
+						var spritesheetBitmaps = getSpriteSheetBitmaps(childMC);
+					
+						for(var spritesheetBitmapId in spritesheetBitmaps)
+							bitmaps[spritesheetBitmapId] = spritesheetBitmaps[spritesheetBitmapId];
+					}
+					else
+					{
+						var bitmap = getBitmap(childMC);
+						bitmaps[childMC.name] = bitmap;
+					}
+					
+					if(childMC.numChildren > 0)
 					{
 						var nestedBitmaps = getBitmaps(childMC);
+						
 						for(var nestedBitmapId in nestedBitmaps)
 							bitmaps[nestedBitmapId] = nestedBitmaps[nestedBitmapId];
 					}
@@ -78,14 +90,58 @@
 			
 			return bitmaps;
 		}
+		
+		function getSpriteSheetBitmaps(mc:MovieClip)
+		{
+			var spritesheetBitmaps = {};
+			var keyframeId = 0;
+			var bitmapId:String;
+			
+			for(var frameId = 1; frameId <= mc.totalFrames; ++frameId)
+			{
+				mc.gotoAndStop(frameId);
 				
+				var currentBitmap = getBitmap(mc);
+				var addBitmap = false;
+				
+				if(frameId == 1)
+				{
+					addBitmap = true;
+				}
+				else
+				{
+					var distinctCount = 0;
+					var bitmapCount = 0;
+					
+					for each(var bitmap in spritesheetBitmaps)
+					{
+						bitmapCount++;
+						
+						var bitmapComparison = currentBitmap.compare(bitmap);
+						if(bitmapComparison == -4 || bitmapComparison == -3)
+							distinctCount++;
+					}
+					
+					if(distinctCount == bitmapCount)
+						addBitmap = true;
+				}
+				
+				if(addBitmap)
+					spritesheetBitmaps[frameId] = currentBitmap;
+			}
+			
+			return spritesheetBitmaps;
+		}
+		
 		function getBitmap(mc:MovieClip):BitmapData
 		{
 			var bounds = mc.getBounds(mc);
+			
 			var matrix:Matrix = new Matrix(1, 0, 0, 1, -bounds.x, -bounds.y);
 			matrix.scale(_scale, _scale);
 			
-			var bitmap = new Bitmap(new BitmapData(mc.width * _scale, mc.height * _scale, true, _bgColor));
+			var bitmap:Bitmap = new Bitmap(new BitmapData(mc.width * _scale, mc.height * _scale, true, _bgColor));
+			
 			toggleChildrenVisibility(mc, false);
 			bitmap.bitmapData.draw(mc, matrix, null, null, null, true);
 			toggleChildrenVisibility(mc, true);

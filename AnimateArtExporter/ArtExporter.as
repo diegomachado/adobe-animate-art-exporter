@@ -20,7 +20,6 @@
 		var _padding:uint;
 		var _transparentBackground:Boolean;
 		var _scalesToExport:Array;
-		
 
 		public function init(root:DisplayObjectContainer, config:ArtExporterConfig)
 		{
