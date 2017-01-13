@@ -21,9 +21,6 @@
 			
 			var animationsJSON = JSON.stringify(animationsData, formatAnimationJSON, 2);
 			FileExporter.ExportJSON(animationsJSON, getQualifiedClassName(sourceMC) + "-AnimationData");
-			
-			var animationsSpritesheetJSON = JSON.stringify(spritesheetData, formatAnimationJSON, 2);
-			FileExporter.ExportJSON(animationsSpritesheetJSON, getQualifiedClassName(sourceMC) + "-SpritesheetAnimationData");
 		}
 		
 		function extractEntityData(mc:MovieClip)

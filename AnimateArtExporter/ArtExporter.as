@@ -3,7 +3,7 @@
 	import by.blooddy.crypto.image.PNGEncoder;
 	import AnimateArtExporter.AnimationData;
 	import AnimateArtExporter.AssetSheet;
-	import AnimateArtExporter.SpriteSheet;
+	import AnimateArtExporter.Spritesheet;
 	
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
@@ -14,7 +14,7 @@
 		
 		var _animationData:AnimationData;
 		var _assetSheet:AssetSheet;
-		var _spriteSheet:SpriteSheet;
+		var _spriteSheet:Spritesheet;
 		
 		var _movieClip:MovieClip;
 		var _padding:uint;
@@ -35,7 +35,7 @@
 			
 			_animationData = new AnimationData();
 			_assetSheet = new AssetSheet();
-			_spriteSheet = new SpriteSheet();
+			_spriteSheet = new Spritesheet();
 		}
 		
 		public function exportAssetSheet()

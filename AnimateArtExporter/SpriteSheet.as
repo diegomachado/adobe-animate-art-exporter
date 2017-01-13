@@ -6,7 +6,7 @@
 	import flash.utils.getQualifiedClassName;
 	import flash.geom.Matrix;
 
-	public class SpriteSheet
+	public class Spritesheet
 	{
 		var movieClipName = "";
 		var _scale:int;
@@ -24,13 +24,13 @@
 			var bitmaps = getBitmaps(mc);
 			var maxRectSolver = new MaxRectSolver(mc, bitmaps, _scale, sheetPadding);
 			
-			var spriteSheetName = createSpriteSheet(bitmaps, maxRectSolver);
+			var spriteSheetName = createSpritesheet(bitmaps, maxRectSolver);
 			
 			var framesJSON = maxRectSolver.exportFramesJSON(spriteSheetName);
 			FileExporter.ExportJSON(framesJSON, spriteSheetName + "-Frames");
 		}
 		
-		function createSpriteSheet(bitmaps:Array, maxRectSolver:MaxRectSolver):String
+		function createSpritesheet(bitmaps:Array, maxRectSolver:MaxRectSolver):String
 		{
 			var maxRects = maxRectSolver.getRectangles();
 			var maxRectSize = maxRectSolver.getSize();
@@ -53,22 +53,10 @@
 		{
 			var bitmaps = [];
 			
-			for(var frameId = 0; frameId < mc.totalFrames; ++frameId)
+			for(var frameId = 1; frameId <= mc.totalFrames; ++frameId)
 			{
 				var frameBitmap:BitmapData = getFrameBitmap(mc, frameId);
-				
-				var newBitmap = true;
-				for each(var bitmap in bitmaps)
-				{
-					if(frameBitmap.compare(bitmap) == 0)
-					{
-						newBitmap = false;
-						break;
-					}
-				}
-				
-				if(newBitmap)
-					bitmaps.push(frameBitmap);
+				bitmaps.push(frameBitmap);
 			}
 
 			return bitmaps;

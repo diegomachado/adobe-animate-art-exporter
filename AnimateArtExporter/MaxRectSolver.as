@@ -75,10 +75,8 @@
 				var frame = _rectangles[frameId];
 				var frameJSON = {};
 				
-				frameJSON["filename"] = String(frameId);
+				frameJSON["id"] = String(frameId);
 				frameJSON["frame"] = { "x": frame.x, "y": frame.y, "w": frame.width, "h": frame.height };
-				//frameJSON["rotated"] = false;
-				//frameJSON["trimmed"] = false;
 				framesJSON["frames"].push(frameJSON);
 			}
 			
