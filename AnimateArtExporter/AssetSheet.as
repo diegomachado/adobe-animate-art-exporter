@@ -9,6 +9,7 @@
 	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
+	import flash.display.FrameLabel;
 
 	public class AssetSheet
 	{		
@@ -17,6 +18,8 @@
 		var _bgColor:uint;
 		var _assetSheetExtension = "-AssetSheet";
 		var _transparentBG:Boolean;
+		
+		var _spritesheetData = {};
 		
 		public function export(mc:MovieClip, scale:int, sheetPadding:int, transparentBG:Boolean)
 		{			
@@ -27,11 +30,12 @@
 			
 			var bitmaps = getBitmaps(mc);
 			var maxRectSolver = new MaxRectSolver(mc, bitmaps, _scale, sheetPadding);
-			
 			var assetSheetFileName = createAssetSheet(bitmaps, maxRectSolver);			
 			
 			var framesJSON = maxRectSolver.exportFramesJSON(assetSheetFileName);
 			FileExporter.ExportJSON(framesJSON, assetSheetFileName + "-Frames");
+			
+			FileExporter.ExportJSON(JSON.stringify(_spritesheetData), assetSheetFileName + "-SpritesheetFrames");
 		}
 		
 		function createAssetSheet(bitmaps:Object, maxRectSolver:MaxRectSolver):String
@@ -64,10 +68,14 @@
 				if(child is MovieClip)
 				{
 					var childMC:MovieClip = child as MovieClip;
-
-					if(childMC.currentFrameLabel == "spritesheet")
+	
+					//for (var frameId in childMC.currentLabels)
+//						trace(frameId, childMC.currentLabels[0]);
+					
+					if(childMC.currentLabels[0] != undefined && childMC.currentLabels[0].name == "spritesheet")
 					{
-						var spritesheetBitmaps = getSpriteSheetBitmaps(childMC);
+						var animationLabel = childMC.currentLabels[1].name;
+						var spritesheetBitmaps = getSpriteSheetBitmaps(childMC, animationLabel);
 					
 						for(var spritesheetBitmapId in spritesheetBitmaps)
 							bitmaps[spritesheetBitmapId] = spritesheetBitmaps[spritesheetBitmapId];
@@ -91,11 +99,14 @@
 			return bitmaps;
 		}
 		
-		function getSpriteSheetBitmaps(mc:MovieClip)
+		function getSpriteSheetBitmaps(mc:MovieClip, animationName:String)
 		{
 			var spritesheetBitmaps = {};
-			var keyframeId = 0;
-			var bitmapId:String;
+			_spritesheetData[animationName] = {}
+			_spritesheetData[animationName][mc.name] = {};
+			
+			var keyframeId = 1;
+			var spriteName = mc.name + "_" + keyframeId;
 			
 			for(var frameId = 1; frameId <= mc.totalFrames; ++frameId)
 			{
@@ -113,13 +124,23 @@
 					var distinctCount = 0;
 					var bitmapCount = 0;
 					
-					for each(var bitmap in spritesheetBitmaps)
+					for(var bitmapId in spritesheetBitmaps)
 					{
+						var bitmap = spritesheetBitmaps[bitmapId];
 						bitmapCount++;
 						
 						var bitmapComparison = currentBitmap.compare(bitmap);
+						
 						if(bitmapComparison == -4 || bitmapComparison == -3)
-							distinctCount++;
+						{
+							spriteName = mc.name + "_" + keyframeId;
+							distinctCount++;							
+						}
+						else
+						{
+							spriteName = bitmapId;		
+							break;
+						}
 					}
 					
 					if(distinctCount == bitmapCount)
@@ -127,7 +148,12 @@
 				}
 				
 				if(addBitmap)
-					spritesheetBitmaps[frameId] = currentBitmap;
+				{					
+					spritesheetBitmaps[spriteName] = currentBitmap;
+					keyframeId++;
+				}
+				
+				_spritesheetData[animationName][mc.name][frameId] = spriteName;
 			}
 			
 			return spritesheetBitmaps;
@@ -158,6 +184,11 @@
 				if(child is MovieClip)
 					child.visible = isVisible;
 			}
+		}
+		
+		public function getSpritesheetData():Object
+		{
+			return _spritesheetData;
 		}
 	}
 }

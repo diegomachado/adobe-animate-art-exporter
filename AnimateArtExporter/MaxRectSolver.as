@@ -72,11 +72,11 @@
 			
 			for(var frameId in _rectangles)
 			{
-				var rect = _rectangles[frameId];
+				var frame = _rectangles[frameId];
 				var frameJSON = {};
 				
 				frameJSON["filename"] = String(frameId);
-				frameJSON["frame"] = { "x": rect.x, "y": rect.y, "w": rect.width, "h": rect.height };
+				frameJSON["frame"] = { "x": frame.x, "y": frame.y, "w": frame.width, "h": frame.height };
 				//frameJSON["rotated"] = false;
 				//frameJSON["trimmed"] = false;
 				framesJSON["frames"].push(frameJSON);

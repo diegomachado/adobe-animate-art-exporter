@@ -7,22 +7,27 @@
 	
 	public class AnimationData
 	{
-		public function export(sourceMC:MovieClip)
-		{
+		public function export(sourceMC:MovieClip, spritesheetData:Object)
+		{			
 			var animationsData = extractEntityData(sourceMC);
 			
-			var animationsJSON = JSON.stringify(animationsData, function(k, v)
+			for (var animationName in animationsData)
 			{
-				if(k == "colorMatrix")
+				for(var spriteAnimationName in spritesheetData)
 				{
-					var arrayString = JSON.stringify(v)
-					return arrayString.slice(1, arrayString.length - 1);
+					for(var spriteId in spritesheetData[spriteAnimationName])
+					{
+						trace(animationName, spriteId);
+						animationsData[animationName][spriteId]["spritesheetData"] = spritesheetData[animationName][spriteId];
+					}
 				}
-				
-				return v;
-			}, 2);
+			}
 			
+			var animationsJSON = JSON.stringify(animationsData, formatAnimationJSON, 2);
 			FileExporter.ExportJSON(animationsJSON, getQualifiedClassName(sourceMC) + "-AnimationData");
+			
+			var animationsSpritesheetJSON = JSON.stringify(spritesheetData, formatAnimationJSON, 2);
+			FileExporter.ExportJSON(animationsSpritesheetJSON, getQualifiedClassName(sourceMC) + "-SpritesheetAnimationData");
 		}
 		
 		function extractEntityData(mc:MovieClip)
@@ -39,8 +44,16 @@
 				var animationsData = entityData["animations"];
 				
 				if(animationsData[animationName] == null)
+				{
 					animationsData[animationName] = {};
-					
+					animationsData[animationName]["meta"] = {};
+					animationsData[animationName]["meta"]["totalFrames"] = 1;
+				}
+				else
+				{
+					animationsData[animationName]["meta"]["totalFrames"]++;
+				}
+
 				var animationData = animationsData[animationName];
 				extractChildrenData(animationData, mc);
 			}
@@ -107,8 +120,21 @@
 			properties["colorMatrix"] = colorMatrix;
 			properties["depth"] = mc.parent.getChildIndex(mc);
 			properties["blendMode"] = mc.blendMode;
+			
+			//if(
 						
 			return properties;
+		}
+		
+		function formatAnimationJSON(key, value)
+		{
+			if(key == "colorMatrix")
+			{
+				var arrayString = JSON.stringify(value)
+				return arrayString.slice(1, arrayString.length - 1);
+			}
+			
+			return value;
 		}
 	}
 }

@@ -42,8 +42,8 @@
 		{
 			for(var scaleId in _scalesToExport)
 				_assetSheet.export(_movieClip, _scalesToExport[scaleId], _padding, _transparentBackground);
-			
-			_animationData.export(_movieClip);
+		
+			_animationData.export(_movieClip, _assetSheet.getSpritesheetData());
 		}
 		
 		public function exportSpriteSheet()
