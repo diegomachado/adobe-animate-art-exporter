@@ -34,8 +34,6 @@
 			
 			var framesJSON = maxRectSolver.exportFramesJSON(assetSheetFileName);
 			FileExporter.ExportJSON(framesJSON, assetSheetFileName + "-Frames");
-			
-			FileExporter.ExportJSON(JSON.stringify(_spritesheetData), assetSheetFileName + "-SpritesheetFrames");
 		}
 		
 		function createAssetSheet(bitmaps:Object, maxRectSolver:MaxRectSolver):String
@@ -103,7 +101,7 @@
 		{
 			var spritesheetBitmaps = {};
 			_spritesheetData[animationName] = {}
-			_spritesheetData[animationName][mc.name] = {};
+			_spritesheetData[animationName][mc.name] = [];
 			
 			var keyframeId = 1;
 			var spriteName = mc.name + "_" + keyframeId;
@@ -153,7 +151,7 @@
 					keyframeId++;
 				}
 				
-				_spritesheetData[animationName][mc.name][frameId] = spriteName;
+				_spritesheetData[animationName][mc.name].push(spriteName);
 			}
 			
 			return spritesheetBitmaps;

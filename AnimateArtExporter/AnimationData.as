@@ -11,15 +11,11 @@
 		{			
 			var animationsData = extractEntityData(sourceMC);
 			
-			for (var animationName in animationsData)
+			for(var animationName in spritesheetData)
 			{
-				for(var spriteAnimationName in spritesheetData)
+				for(var spriteId in spritesheetData[animationName])
 				{
-					for(var spriteId in spritesheetData[spriteAnimationName])
-					{
-						trace(animationName, spriteId);
-						animationsData[animationName][spriteId]["spritesheetData"] = spritesheetData[animationName][spriteId];
-					}
+					animationsData[animationName][spriteId]["spritesheetFrames"] = spritesheetData[animationName][spriteId];
 				}
 			}
 			
@@ -104,7 +100,6 @@
 
 			properties["rotation"] = mc.rotation.toFixed(3);
 			properties["alpha"] = mc.alpha.toFixed(2);
-			properties["frameId"] = mc.currentFrame;
 			
 			var color = new ColorMatrixFilter();
 			var colorMatrix= color.matrix;
