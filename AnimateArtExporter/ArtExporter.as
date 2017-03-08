@@ -1,9 +1,9 @@
 ﻿package AnimateArtExporter
 {	
 	import by.blooddy.crypto.image.PNGEncoder;
-	import AnimateArtExporter.AnimationData;
-	import AnimateArtExporter.AssetSheet;
-	import AnimateArtExporter.Spritesheet;
+	import AnimateArtExporter.animation.AnimationData;
+	import AnimateArtExporter.animation.AssetSheet;
+	import AnimateArtExporter.spritesheet.Spritesheet;
 	
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;

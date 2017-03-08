@@ -1,4 +1,4 @@
-﻿package AnimateArtExporter 
+﻿package AnimateArtExporter.utils
 {
 	import flash.display.MovieClip;
 	import flash.display.BitmapData;
@@ -11,7 +11,7 @@
 		var _scale:int;
 		var _padding:int;
 		
-		function MaxRectSolver(mc:MovieClip, bitmapDatas:Object, scale:int, padding:int)
+		function MaxRectSolver(mc:MovieClip, bitmapDatas:Object, scale:int = 1, padding:int = 0)
 		{
 			_rectangles = {};
 			_size = 0;
@@ -23,7 +23,6 @@
 		function solve(mc:MovieClip, bitmapDatas:Object)
 		{
 			var rectangles = {};
-			
 			var pow2Sizes = [128, 256, 512, 1024, 2048];
 			var pow2Sheet:BitmapData;
 			var packer:MaxRectPacker;
@@ -64,7 +63,7 @@
 			}
 		}
 		
-		public function exportFramesJSON(fileName):String
+		public function exportFramesJsonString(fileName):String
 		{
 			var framesJSON = {}
 			framesJSON["meta"] = {};
@@ -81,7 +80,7 @@
 			}
 			
 			framesJSON["meta"]["image"] = fileName;
-			framesJSON["meta"]["size"] = { "w": _size, "h": _size };
+			framesJSON["meta"]["spriteSheetSize"] = { "w": _size, "h": _size };
 			framesJSON["meta"]["scale"] = 1;
 			
 			return JSON.stringify(framesJSON, function(k,v) { return v }, 2);

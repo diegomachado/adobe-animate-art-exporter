@@ -1,5 +1,7 @@
-﻿package AnimateArtExporter
+﻿package AnimateArtExporter.animation
 {
+	import AnimateArtExporter.utils.*;
+	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.DisplayObjectContainer;
@@ -10,7 +12,7 @@
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
 	import flash.display.FrameLabel;
-
+	
 	public class AssetSheet
 	{
 		var _movieClipName = "";
@@ -32,8 +34,8 @@
 			var maxRectSolver = new MaxRectSolver(mc, bitmaps, _scale, sheetPadding);
 			var assetSheetFileName = createAssetSheet(bitmaps, maxRectSolver);
 
-			var framesJSON = maxRectSolver.exportFramesJSON(assetSheetFileName);
-			FileExporter.ExportJSON(framesJSON, assetSheetFileName + "-Frames");
+			var framesJsonString = maxRectSolver.exportFramesJsonString(assetSheetFileName);
+			FileExporter.ExportJSON(framesJsonString, assetSheetFileName + "-Frames");
 		}
 
 		function createAssetSheet(bitmaps: Object, maxRectSolver: MaxRectSolver): String

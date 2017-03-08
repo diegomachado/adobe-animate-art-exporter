@@ -1,4 +1,4 @@
-﻿package AnimateArtExporter
+﻿package AnimateArtExporter.utils
 {	
 	import flash.utils.ByteArray;
 	import flash.filesystem.File;

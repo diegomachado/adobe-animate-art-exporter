@@ -1,4 +1,4 @@
-﻿package AnimateArtExporter
+﻿package AnimateArtExporter.utils
 {	
 	public class Utils 
 	{		
@@ -6,7 +6,8 @@
 		{
 			var size = 0;
 			
-			for (var s:String in map) size++;
+			for (var s:String in map) 
+				size++;
 			
 			return size;
 		}
